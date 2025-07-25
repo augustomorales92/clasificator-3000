@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: 'storage.googleapis.com',
         pathname: '/clasificator-3000-models/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        pathname: '/clasificator-storage/**',
+      },
     ],
   },
 }
