@@ -29,7 +29,7 @@ const options = {
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60, // 5 minutos de caché
+      maxAge: 30 * 60, // 30 minutos de caché
     },
   },
   user: {
@@ -51,23 +51,26 @@ export const auth = betterAuth({
   plugins: [
     customSession(async ({ user, session }) => {
       const customUser = user as unknown as CustomUser
-      console.log('Raw user from DB:', customUser)
+      console.log('Session creation - Raw user from DB:', customUser)
 
       let permissions: Record<string, Permission[]> = {}
 
       if (typeof customUser.permissions === 'string') {
         try {
           permissions = JSON.parse(customUser.permissions)
+          console.log('Successfully parsed permissions')
         } catch (e) {
           console.error('Error parsing permissions:', e)
+          permissions = {} // Set default empty permissions on error
         }
       } else {
         permissions = customUser.permissions as Record<string, Permission[]>
+        console.log('Using pre-parsed permissions')
       }
 
-      console.log('Parsed permissions:', permissions)
+      console.log('Final session permissions:', permissions)
 
-      return {
+      const finalSession = {
         ...session,
         user: {
           id: customUser.id,
@@ -77,6 +80,9 @@ export const auth = betterAuth({
           permissions,
         } as UserWithPermissions,
       }
+
+      console.log('Final session object:', finalSession)
+      return finalSession
     }),
   ],
 })
