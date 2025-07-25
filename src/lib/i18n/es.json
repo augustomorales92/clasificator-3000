@@ -1,0 +1,66 @@
+{
+  "common": {
+    "actions": {
+      "view_details": "Ver Detalles",
+      "clear_filters": "Limpiar Filtros",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "status": {
+      "completed": "Completado",
+      "processing": "Procesando",
+      "failed": "Fallido"
+    }
+  },
+  "fileUpload": {
+    "dragDrop": "Arrastra y suelta archivos aquí",
+    "clickToSelect": "o haz clic para seleccionar archivos de tu computadora",
+    "supportedFormats": "Soporta archivos PDF, DOC, DOCX e imágenes"
+  },
+  "filesList": {
+    "selectedFiles": "Archivos Seleccionados ({{count}})",
+    "processing": "Procesando...",
+    "upload": "Subir Archivos"
+  },
+  "library": {
+    "title": "Historial de Procesamiento de Archivos",
+    "filesFound": "{{count}} de {{total}} archivos encontrados",
+    "search": {
+      "placeholder": "Buscar archivos por nombre...",
+      "noResults": "No se encontraron archivos que coincidan con los criterios."
+    },
+    "filters": {
+      "title": "Filtros Avanzados",
+      "description": "Filtra tu historial de archivos por varios criterios",
+      "status": "Estado de Procesamiento",
+      "fileType": "Tipo de Archivo",
+      "dateRange": {
+        "title": "Rango de Fecha de Subida",
+        "from": "Desde",
+        "to": "Hasta"
+      },
+      "sort": {
+        "title": "Ordenar Por",
+        "options": {
+          "date": "Fecha de Subida",
+          "filename": "Nombre de Archivo",
+          "size": "Tamaño de Archivo",
+          "processingTime": "Tiempo de Procesamiento"
+        },
+        "order": {
+          "asc": "Ascendente",
+          "desc": "Descendente"
+        }
+      }
+    },
+    "fileInfo": {
+      "uploaded": "Subido",
+      "size": "Tamaño",
+      "processing": "Procesamiento",
+      "dimensions": "{{width}} × {{height}}"
+    },
+    "pagination": {
+      "showing": "Mostrando {{from}} - {{to}} de {{total}} archivos"
+    }
+  }
+}

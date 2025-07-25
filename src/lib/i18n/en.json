@@ -1,0 +1,66 @@
+{
+  "common": {
+    "actions": {
+      "view_details": "View Details",
+      "clear_filters": "Clear Filters",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "status": {
+      "completed": "Completed",
+      "processing": "Processing",
+      "failed": "Failed"
+    }
+  },
+  "fileUpload": {
+    "dragDrop": "Drag & drop files here",
+    "clickToSelect": "or click to select files from your computer",
+    "supportedFormats": "Supports PDF, DOC, DOCX, and image files"
+  },
+  "filesList": {
+    "selectedFiles": "Selected Files ({{count}})",
+    "processing": "Processing...",
+    "upload": "Upload Files"
+  },
+  "library": {
+    "title": "File Processing History",
+    "filesFound": "{{count}} of {{total}} files found",
+    "search": {
+      "placeholder": "Search files by name...",
+      "noResults": "No files found matching your criteria."
+    },
+    "filters": {
+      "title": "Advanced Filters",
+      "description": "Filter your file history by various criteria",
+      "status": "Processing Status",
+      "fileType": "File Type",
+      "dateRange": {
+        "title": "Upload Date Range",
+        "from": "From date",
+        "to": "To date"
+      },
+      "sort": {
+        "title": "Sort By",
+        "options": {
+          "date": "Upload Date",
+          "filename": "Filename",
+          "size": "File Size",
+          "processingTime": "Processing Time"
+        },
+        "order": {
+          "asc": "Ascending",
+          "desc": "Descending"
+        }
+      }
+    },
+    "fileInfo": {
+      "uploaded": "Uploaded",
+      "size": "Size",
+      "processing": "Processing",
+      "dimensions": "{{width}} × {{height}}"
+    },
+    "pagination": {
+      "showing": "Showing {{from}} - {{to}} of {{total}} files"
+    }
+  }
+}
