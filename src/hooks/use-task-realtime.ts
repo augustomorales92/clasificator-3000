@@ -1,21 +1,42 @@
 'use client'
 
-import { useSession } from '@/lib/auth-client' // Asumo que esto te da el ID del usuario
-import type { Task } from '@/lib/schema' // Tu tipo Drizzle para Task
+import { useSession } from '@/lib/auth-client'
+import type { Task } from '@/lib/schema'
 import { supabaseClient } from '@/lib/supabase-client'
 import { RealtimeChannel } from '@supabase/supabase-js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
+const TASKS_QUERY_KEY = 'tasks'
+
+async function fetchTasks(userId: string): Promise<Task[]> {
+  const response = await fetch(`/api/tasks?userId=${userId}`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch tasks.')
+  }
+  return response.json()
+}
+
 export function useTasksRealtime() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const { data: session } = useSession() // Obtiene la sesión del usuario
+  const { data: session } = useSession()
   const userId = session?.user?.id
+  const queryClient = useQueryClient()
 
-  const tasksRef = useRef<Task[]>(tasks)
+  const tasksRef = useRef<Task[]>([])
+
+  // Fetch tasks using TanStack Query
+  const {
+    data: tasks = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: [TASKS_QUERY_KEY, userId],
+    queryFn: () => (userId ? fetchTasks(userId) : Promise.resolve([])),
+    enabled: !!userId,
+  })
+
+  // Keep reference updated for realtime notifications
   useEffect(() => {
     tasksRef.current = tasks
   }, [tasks])
@@ -49,94 +70,65 @@ export function useTasksRealtime() {
     []
   )
 
+  // Set up realtime subscription
   useEffect(() => {
-    if (!userId) {
-      setTasks([])
-      setLoading(false)
-      setError(null)
-      return
-    }
-
-    setLoading(true)
-    setError(null)
+    if (!userId) return
 
     let tasksChannel: RealtimeChannel | null = null
 
-    const initializeAndSubscribe = async () => {
-      try {
-        const initialResponse = await fetch(`/api/tasks?userId=${userId}`)
-        if (!initialResponse.ok) {
-          throw new Error('Failed to fetch initial tasks.')
-        }
-        const initialTasks: Task[] = await initialResponse.json()
-        setTasks(initialTasks)
+    tasksChannel = supabaseClient
+      .channel(`user_tasks_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tasks',
+          filter: `userId=eq.${userId}`,
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const newTask = payload.new as Task
+            queryClient.setQueryData<Task[]>([TASKS_QUERY_KEY, userId], (old) =>
+              old ? [...old, newTask] : [newTask]
+            )
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedTask = payload.new as Task
+            const previousTask = tasksRef.current.find(
+              (t) => t.id === updatedTask.id
+            )
 
-        tasksChannel = supabaseClient
-          .channel(`user_tasks_${userId}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'tasks',
-              filter: `userId=eq.${userId}`,
-            },
-            (payload) => {
-              setTasks((prevTasks) => {
-                let currentTasks = [...prevTasks]
-
-                if (payload.eventType === 'INSERT') {
-                  const newTask = payload.new as Task
-                  currentTasks.push(newTask)
-                } else if (payload.eventType === 'UPDATE') {
-                  const updatedTask = payload.new as Task
-                  const previousTask = tasksRef.current.find(
-                    (t) => t.id === updatedTask.id
+            if (previousTask) {
+              notifyTaskStatusChange(previousTask, updatedTask)
+              queryClient.setQueryData<Task[]>(
+                [TASKS_QUERY_KEY, userId],
+                (old) =>
+                  old?.map((task) =>
+                    task.id === updatedTask.id ? updatedTask : task
                   )
-
-                  if (previousTask) {
-                    notifyTaskStatusChange(previousTask, updatedTask)
-                    currentTasks = currentTasks.map((task) =>
-                      task.id === updatedTask.id ? updatedTask : task
-                    )
-                  }
-                } else if (payload.eventType === 'DELETE') {
-                  const deletedTaskId = payload.old?.id
-                  if (deletedTaskId) {
-                    currentTasks = currentTasks.filter(
-                      (task) => task.id !== deletedTaskId
-                    )
-                    toast.info(
-                      `Task removed: ${payload.old?.serviceName || 'Task'}`
-                    )
-                  }
-                }
-                return currentTasks
-              })
+              )
             }
-          )
-          .subscribe((status, err) => {
-            if (status === 'SUBSCRIBED') {
-              console.log(`Subscribed to Realtime for user ${userId}`)
-              setLoading(false)
+          } else if (payload.eventType === 'DELETE') {
+            const deletedTaskId = payload.old?.id
+            if (deletedTaskId) {
+              queryClient.setQueryData<Task[]>(
+                [TASKS_QUERY_KEY, userId],
+                (old) => old?.filter((task) => task.id !== deletedTaskId)
+              )
+              toast.info(`Task removed: ${payload.old?.serviceName || 'Task'}`)
             }
-            if (status === 'CHANNEL_ERROR') {
-              console.error('Supabase Realtime Channel Error:', err)
-              setError('Realtime connection error. Please refresh.')
-              setLoading(false)
-            }
-          })
-      } catch (err: any) {
-        console.error('Error fetching initial tasks or subscribing:', err)
-        setError(
-          err.message ||
-            'Failed to load tasks and establish realtime connection.'
-        )
-        setLoading(false)
-      }
-    }
-
-    initializeAndSubscribe()
+          }
+        }
+      )
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log(`Subscribed to Realtime for user ${userId}`)
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Supabase Realtime Channel Error:', err)
+          toast.error('Realtime connection error. Please refresh.')
+        }
+      })
 
     return () => {
       if (tasksChannel) {
@@ -144,76 +136,89 @@ export function useTasksRealtime() {
         console.log(`Unsubscribed Realtime for user ${userId}`)
       }
     }
-  }, [userId, notifyTaskStatusChange])
+  }, [userId, notifyTaskStatusChange, queryClient])
 
-  const triggerTaskAction = useCallback(
-    async (jobId: string, method: string, body?: object) => {
-      if (!userId) {
-        toast.error('Authentication required.')
-        return false
-      }
-      setLoading(true)
-      try {
-        const response = await fetch(
-          `/api/tasks?taskId=${jobId}&userId=${userId}`,
-          {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: body ? JSON.stringify(body) : undefined,
-          }
-        )
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(
-            errorData.message || `Failed to ${method.toLowerCase()} task`
-          )
+  // Task action mutations
+  const retryMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await fetch(
+        `/api/tasks?taskId=${jobId}&userId=${userId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'queue' }),
         }
-        setLoading(false)
-        return true
-      } catch (error: any) {
-        console.error(`Error ${method.toLowerCase()}ing job:`, error)
-        toast.error(error.message || `Failed to ${method.toLowerCase()} job`)
-        setLoading(false)
-        return false
+      )
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to retry task')
       }
     },
-    [userId]
-  )
-
-  const retryTask = useCallback(
-    async (jobId: string) => {
-      const success = await triggerTaskAction(jobId, 'PUT', { status: 'queue' })
-      if (success) toast.success('Task queued for retry.')
+    onSuccess: () => {
+      toast.success('Task queued for retry.')
     },
-    [triggerTaskAction]
-  )
-
-  const cancelTask = useCallback(
-    async (jobId: string) => {
-      const success = await triggerTaskAction(jobId, 'PUT', {
-        status: 'failed',
-        errorMessage: 'Cancelled by user',
-      })
-      if (success) toast.success('Task cancelled.')
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to retry task')
     },
-    [triggerTaskAction]
-  )
+  })
 
-  const deleteTask = useCallback(
-    async (jobId: string) => {
-      const success = await triggerTaskAction(jobId, 'DELETE')
-      if (success) toast.success('Task deleted.')
+  const cancelMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await fetch(
+        `/api/tasks?taskId=${jobId}&userId=${userId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            status: 'failed',
+            errorMessage: 'Cancelled by user',
+          }),
+        }
+      )
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to cancel task')
+      }
     },
-    [triggerTaskAction]
-  )
+    onSuccess: () => {
+      toast.success('Task cancelled.')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to cancel task')
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await fetch(
+        `/api/tasks?taskId=${jobId}&userId=${userId}`,
+        {
+          method: 'DELETE',
+        }
+      )
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to delete task')
+      }
+    },
+    onSuccess: () => {
+      toast.success('Task deleted.')
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete task')
+    },
+  })
 
   return {
     tasks,
-    loading,
-    error,
-    retryTask,
-    cancelTask,
-    deleteTask,
+    loading:
+      isLoading ||
+      retryMutation.isPending ||
+      cancelMutation.isPending ||
+      deleteMutation.isPending,
+    error: error?.message || null,
+    retryTask: (jobId: string) => retryMutation.mutate(jobId),
+    cancelTask: (jobId: string) => cancelMutation.mutate(jobId),
+    deleteTask: (jobId: string) => deleteMutation.mutate(jobId),
   }
 }

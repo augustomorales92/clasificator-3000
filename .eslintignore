@@ -1,0 +1,9 @@
+src/app/api/gemini-tasks/route.ts
+src/app/auth/login/form.tsx
+src/app/dashboard/jobs/[id]/candidates/content.tsx
+src/app/dashboard/jobs/page.tsx
+src/components/layouts/root-client-layout.tsx
+src/hooks/use-task-realtime.ts
+src/app/dashboard/library/[module]/(base-module)/content.tsx
+src/app/dashboard/library/[module]/[id]/content.tsx
+src/app/dashboard/prescriptions/[id]/content.tsx 

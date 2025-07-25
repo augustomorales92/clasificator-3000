@@ -21,6 +21,7 @@ import {
   ZoomOut,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface ProcessedFile {
@@ -346,10 +347,12 @@ export default function FileDetailPage({
                       </DialogTrigger>
                       <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
                         <div className="relative w-full h-full">
-                          <img
+                          <Image
                             src={currentImage?.url || '/placeholder.svg'}
                             alt={`${file.filename} - ${currentImage?.label}`}
                             className="w-full h-full object-contain"
+                            width={100}
+                            height={100}
                           />
                         </div>
                       </DialogContent>
@@ -390,11 +393,13 @@ export default function FileDetailPage({
                           value={version.id}
                           className="mt-0 w-full relative"
                         >
-                          <img
+                          <Image
                             src={version.url || '/placeholder.svg'}
                             alt={`${file.filename} - ${version.label}`}
                             className="w-full h-auto object-contain transition-transform duration-200 max-h-[500px] sm:max-h-[600px]"
                             style={{ transform: `scale(${zoomLevel / 100})` }}
+                            width={100}
+                            height={100}
                           />
                           {/* Integrated Download Button */}
                           <div className="absolute top-4 right-4">
@@ -426,10 +431,12 @@ export default function FileDetailPage({
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        <img
+                        <Image
                           src={version.url || '/placeholder.svg'}
                           alt={version.label}
                           className="w-full h-full object-cover"
+                          width={100}
+                          height={100}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-1 left-1 right-1">

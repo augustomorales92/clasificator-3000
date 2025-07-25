@@ -1,6 +1,5 @@
-  'use client'
+'use client'
 
-import { Routes } from '@/constants/routes'
 import { FilterDrawer } from '@/components/filter-drawer'
 import { SearchFilterHeader } from '@/components/search-filter-header'
 import { Badge } from '@/components/ui/badge'
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
+import { Routes } from '@/constants/routes'
 import {
   Building,
   Clock,
@@ -428,9 +428,7 @@ export default function JobBoardPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold ">
-              Job Board
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-bold ">Job Board</h1>
             <p className="text-gray-600 mt-1">
               {filteredAndSortedJobs.length} of {jobs.length} jobs found
             </p>
@@ -698,7 +696,9 @@ export default function JobBoardPage() {
                         View Details
                       </Button>
                     </Link>
-                    <Link href={`${Routes.JOB_CANDIDATES.replace(':id', job.id)}`}>
+                    <Link
+                      href={`${Routes.JOB_CANDIDATES.replace(':id', job.id)}`}
+                    >
                       <Button size="sm" className="w-full sm:w-auto">
                         <Search className="h-4 w-4 mr-2" />
                         Find Candidates

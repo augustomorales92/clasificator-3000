@@ -65,7 +65,7 @@ export function LoginForm({
           }
           toast.error(ctx.error.message)
         },
-        onSuccess: (ctx) => {
+        onSuccess: () => {
           router.push('/dashboard')
         },
       }

@@ -1,6 +1,5 @@
 'use client'
 
-import { Routes } from '@/constants/routes'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Routes } from '@/constants/routes'
 import {
   AlertCircle,
   ArrowLeft,
@@ -329,11 +329,7 @@ const getCandidateMatches = (jobId: string): CandidateMatch[] => {
   return mockMatches[jobId] || []
 }
 
-export default function JobCandidatesContent({
-  id,
-}: {
-  id: string
-}) {
+export default function JobCandidatesContent({ id }: { id: string }) {
   const [job, setJob] = useState<JobPosting | null>(null)
   const [candidates, setCandidates] = useState<CandidateMatch[]>([])
   const [searchTerm, setSearchTerm] = useState('')

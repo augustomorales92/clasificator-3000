@@ -2,7 +2,6 @@
 
 import { I18nProvider } from '@/lib/i18n/i18n-context'
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import PublicHeader from '../header/public-header'
 
@@ -24,7 +23,7 @@ export default function RootClientLayout({
       disableTransitionOnChange
     >
       <I18nProvider>
-        {mounted &&<PublicHeader />}
+        {mounted && <PublicHeader />}
         {children}
       </I18nProvider>
     </NextThemesProvider>

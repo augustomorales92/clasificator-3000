@@ -35,6 +35,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useMemo, useState } from 'react'
 
 interface ProcessedFile {
@@ -652,11 +653,13 @@ export default function LibraryContent({ module }: { module: string }) {
               <CardContent className="p-0 flex flex-col h-full">
                 {/* Large Thumbnail */}
                 <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg bg-gray-100">
-                  <img
+                  <Image
                     src={file.thumbnailUrl || '/placeholder.svg'}
                     alt={file.filename}
                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-                  />
+                    width={100}
+                    height={100}
+                    />
                   {/* Status Overlay */}
                   <div className="absolute top-3 right-3">
                     {getStatusBadge(file.status)}

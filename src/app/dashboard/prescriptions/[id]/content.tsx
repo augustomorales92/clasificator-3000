@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useGeminiTasks } from '@/hooks/use-gemini-tasks'
 import { ArrowLeft, Copy, Download, Edit, Share } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { useState } from 'react'
@@ -132,10 +133,12 @@ export default function PrescriptionDetailsPage({ id }: PageProps) {
             </CardHeader>
             <CardContent>
               <div className="border rounded-lg overflow-hidden bg-white">
-                <img
+                <Image
                   src={task.inputUrl || '/placeholder.svg'}
                   alt={task.serviceName || 'Imagen'}
                   className="w-full h-auto max-h-[600px] object-contain"
+                  width={100}
+                  height={100}
                 />
               </div>
               <div className="mt-4 text-sm text-gray-500">
