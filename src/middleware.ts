@@ -3,7 +3,12 @@ import { NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const sessionToken = request.cookies.get('better-auth.session_token')
+  let sessionToken = request.cookies.get('__Secure-better-auth.session_token')
+
+  // Si no se encuentra con el prefijo Secure-, intentamos obtenerla sin él (común en desarrollo)
+  if (!sessionToken) {
+    sessionToken = request.cookies.get('better-auth.session_token')
+  }
   const isAuthenticated = !!sessionToken?.value
 
   // Debug logging
