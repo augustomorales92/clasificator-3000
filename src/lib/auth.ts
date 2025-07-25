@@ -29,7 +29,7 @@ const options = {
   session: {
     cookieCache: {
       enabled: true,
-      maxAge: 30 * 60, // 30 minutos de caché
+      maxAge: 30 * 60,
     },
   },
   user: {

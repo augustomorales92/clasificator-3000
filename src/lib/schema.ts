@@ -16,7 +16,7 @@ import { z } from 'zod'
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin'])
 export const processingStageEnum = pgEnum('processing_stage', [
   'queue',
-  'pending',
+  'processing',
   'completed',
   'failed',
 ])

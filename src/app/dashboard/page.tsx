@@ -1,5 +1,6 @@
 'use client'
 import FileUpload from '@/components/file-upload'
+import { Routes } from '@/constants/routes'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -81,8 +82,14 @@ export default function Home() {
         )
       }
 
-      toast.success('Data processed successfully', response.data)
-      router.push('/dashboard/status')
+      toast.success('Data processed successfully', {
+        description: 'Your files are being processed in the background',
+        action: {
+          label: 'View Progress',
+          onClick: () => router.push(Routes.STATUS),
+        },
+        duration: 10000,
+      })
     } catch (error) {
       console.error('Error processing resumes:', error)
       if (axios.isAxiosError(error)) {

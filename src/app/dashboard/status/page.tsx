@@ -32,7 +32,8 @@ import Link from 'next/link'
 import { useMemo, useState } from 'react'
 
 export default function StatusTrackingPage() {
-  const { tasks, loading, retryTask, cancelTask, deleteTask } = useTasksRealtime()
+  const { tasks, loading, retryTask, cancelTask, deleteTask } =
+    useTasksRealtime()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [activeTab, setActiveTab] = useState('all')
@@ -47,7 +48,8 @@ export default function StatusTrackingPage() {
         statusFilter === 'all' || task.status === statusFilter
       const matchesTab =
         activeTab === 'all' ||
-        (activeTab === 'active' && ['queue', 'pending'].includes(task.status)) ||
+        (activeTab === 'active' &&
+          ['queue', 'processing'].includes(task.status)) ||
         (activeTab === 'completed' && task.status === 'completed') ||
         (activeTab === 'failed' && task.status === 'failed')
 
@@ -59,19 +61,21 @@ export default function StatusTrackingPage() {
   const stats = useMemo(() => {
     const total = tasks.length
     const queue = tasks.filter((task) => task.status === 'queue').length
-    const pending = tasks.filter((task) => task.status === 'pending').length
+    const processing = tasks.filter(
+      (task) => task.status === 'processing'
+    ).length
     const completed = tasks.filter((task) => task.status === 'completed').length
     const failed = tasks.filter((task) => task.status === 'failed').length
-    const active = queue + pending
+    const active = queue + processing
 
-    return { total, queue, pending, completed, failed, active }
+    return { total, queue, processing, completed, failed, active }
   }, [tasks])
 
   const getStatusIcon = (status: Task['status']) => {
     switch (status) {
       case 'queue':
         return <Clock className="h-4 w-4 text-yellow-500" />
-      case 'pending':
+      case 'processing':
         return <Loader2 className="h-4 w-4 text-blue-500 animate-spin" />
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-500" />
@@ -85,7 +89,7 @@ export default function StatusTrackingPage() {
   const getStatusBadge = (status: Task['status']) => {
     const colors = {
       queue: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      pending: 'bg-blue-100 text-blue-800 border-blue-200',
+      processing: 'bg-blue-100 text-blue-800 border-blue-200',
       completed: 'bg-green-100 text-green-800 border-green-200',
       failed: 'bg-red-100 text-red-800 border-red-200',
     }
@@ -236,7 +240,7 @@ export default function StatusTrackingPage() {
                 <SelectContent>
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="queue">Queue</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
                   <SelectItem value="completed">Completed</SelectItem>
                   <SelectItem value="failed">Failed</SelectItem>
                 </SelectContent>
@@ -346,10 +350,10 @@ export default function StatusTrackingPage() {
                       <div className="flex items-center space-x-2">
                         {job.status === 'completed' && (
                           <Link
-                            href={`${Routes.PRESCRIPTION_DETAILS.replace(
+                            href={Routes.PRESCRIPTION_DETAILS.replace(
                               ':id',
                               job.id
-                            )}`}
+                            )}
                           >
                             <Button variant="outline" size="sm">
                               <Eye className="h-4 w-4 mr-2" />
@@ -369,7 +373,7 @@ export default function StatusTrackingPage() {
                           </Button>
                         )}
 
-                        {job.status === 'pending' && (
+                        {job.status === 'processing' && (
                           <Button
                             variant="outline"
                             size="sm"
